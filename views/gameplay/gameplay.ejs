@@ -1,0 +1,38 @@
+<script>
+  var currentUserString = '<%- JSON.stringify(currentUser.get()) %>'
+</script>
+
+<div class="ui centered grid">
+  <div class="row" id="joinTable">
+    <% var inTable = false
+      if (!inTable) { %>
+        <button class="compact ui black button">Join Table</button>
+    <% } else { %>
+        <button class="compact ui black button">Quit Table</button>
+      <% } %>
+  </div>
+</div>
+
+<div class="ui centered grid">
+  <button class="compact ui green button" id="deal">Deal Cards</button>
+</div>
+
+<div class="ui two column centered grid">
+  <div class="row">
+    <div class="column journal">
+      hi
+      <ul id="messages"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="ui centered grid">
+  <!-- <form class="row" action=""> -->
+    <div class="eight wide column">
+      <button class="fluid ui orange button" name="bet">Bet</button>
+    </div>
+    <div class="eight wide column">
+      <button class="fluid ui violet button " type="button" id="draw">Draw</button>
+    </div>
+  <!-- </form> -->
+</div>
