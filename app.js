@@ -62,6 +62,12 @@ function findBanker() {
 }
 
 io.on('connection', function(socket){
+
+  function emitMoney() {
+    let player = findPlayer(socket.id)
+    socket.emit('emitting Money', player.credits)
+    console.log("Im trying to emit money and this is the credit => ", player.credits);
+  }
   if (findBanker()) {
     console.log('theres a banker and you can play');
     socket.emit('tableTrue', `${playersInGame.length} online and theres a table` )
@@ -80,6 +86,7 @@ io.on('connection', function(socket){
     console.log("pig array>>>>>", playersInGame);
     // emit welcome message to new user
     socket.emit('readyToPlay', `Hi ${player.name}, welcome to pHuatty Baccarrat!`)
+    emitMoney()
     // broadcast their arrival to everyone else
     socket.broadcast.emit('created', user)
     // socket.emit('whosOnline', `${playersInGame.length} online` )
@@ -106,13 +113,13 @@ io.on('connection', function(socket){
     user.socketID = socket.id
     user.inGame = true
     console.log('<<<<<<This is user:', user);
-    console.log(typeof(user));
     playersInGame.unshift(user)
     let player = user
     // console.log("this is player>>>>>", player);
     console.log("pig array>>>>>", playersInGame);
     // emit welcome message to new user
     socket.emit('welcome', `Hi ${player.name}, welcome to pHuatty Baccarrat!`)
+    emitMoney()
     // broadcast their arrival to everyone else
     socket.broadcast.emit('joined', user)
     socket.emit('whosOnline', `${playersInGame.length} online and banker` )
@@ -193,18 +200,26 @@ io.on('connection', function(socket){
   });
 
   //listen for draw
-  socket.on('draw', function (user) { //pass user.name
-    console.log('im drawing');
-    console.log("drawing user's particular: ", user);
-    console.log(playersInGame);
+  socket.on('draw', function () { //pass user.name
     let player = findPlayer(socket.id)
     var arrayIndex = playersInGame.indexOf(player);
     deal(playersInGame[arrayIndex])
     console.log('drawn');
-    console.log(playersInGame[arrayIndex].cards);
+    console.log(playersInGame[arrayIndex].cards[2]);
     socket.emit('stop draw')
+    socket.emit('oneCard', player.cards[2])
   })
-});
+
+  //lister for new Round
+  socket.on('new', function () {
+    //Clear all the players card array on server and clear on client
+    for (var l = 0; l < playersInGame.length; l++) {
+      playersInGame[l].cards = []
+      io.sockets.connected[playersInGame[l].socketID].emit('clear')
+
+    }
+  })
+});//End OF SOCKET IO
 
 // GAMELOGIC
 

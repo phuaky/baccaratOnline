@@ -17,7 +17,8 @@ router.post('/signup', function (req, res) {
     },
     defaults: {
       username: req.body.username,
-      password: req.body.password
+      password: req.body.password,
+      credits: 200
     }
   }).spread(function (user, created) {
     if (created) {

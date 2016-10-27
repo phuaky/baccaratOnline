@@ -30,8 +30,14 @@
         <a class="active item">
           <%= currentUser.username %>
         </a>
+        <a class="item">
+          <strong>$<%= currentUser.credits %> </strong> &nbsp in account
+        </a>
+        <a class="item">
+          <strong>$<span id="creditOnHand"></span> </strong> &nbsp on hand in game
+        </a>
         <div class="right menu">
-          <a class="ui item">
+          <a class="ui item" href="/users/logout">
             Logout
           </a>
         </div>

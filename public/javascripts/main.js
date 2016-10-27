@@ -32,6 +32,7 @@ $('#log-in').click(function() {
 $('#createTable').click(function () {
   var currentUser = JSON.parse(currentUserString)
   user.name = currentUser.username
+  user.credits = currentUser.credits
   user.type = 'banker'
   console.log('Creating table with name: ', user.name)
   socket.emit('create', user)
@@ -49,6 +50,7 @@ $('#joinTable').click(function () {
   // console.log(currentUserString)
   var currentUser = JSON.parse(currentUserString)
   user.name = currentUser.username
+  user.credits = currentUser.credits
   console.log('Joining table with name: ', user.name)
   socket.emit('join', user)
 })
@@ -71,7 +73,6 @@ socket.on('tableFalse', function(msg) {
 
 // welcome message received from the server
 socket.on('welcome', function (msg) {
-  console.log('Received welcome message: ', msg)
   // enable the form and add welcome message
   $('#join').addClass('hidden')
   $('#quit').removeClass('hidden')
@@ -121,20 +122,26 @@ socket.on('left', function (user) {
 })
 
 // keep track of who is ONLINE
-  socket.on('online', function (playersInGame) {
-    var names = ''
-    // console.log('playersInGame: ', playersInGame)
-    for (var i = 0; i < playersInGame.length; ++i) {
-      if (playersInGame[i].name) {
-        if (i > 0) {
-          if (i === playersInGame.length - 1) names += ' and '
-          else names += ', '
-        }
-        names += playersInGame[i].name
+socket.on('online', function (playersInGame) {
+  var names = ''
+  // console.log('playersInGame: ', playersInGame)
+  for (var i = 0; i < playersInGame.length; ++i) {
+    if (playersInGame[i].name) {
+      if (i > 0) {
+        if (i === playersInGame.length - 1) names += ' and '
+        else names += ', '
       }
+      names += playersInGame[i].name
     }
-    $('#messages').prepend($('<li>').text(names));
-  })
+  }
+  $('#messages').prepend($('<li>').text(names));
+})
+
+//Receiving money
+socket.on('emitting Money', function(credits) {
+  console.log('received money');
+  $('#creditOnHand').html(credits)
+})
 
 //ON CLICK OF DEAL
  $('#deal').click(function() {
@@ -148,11 +155,8 @@ socket.on('stop deal', function() {
 })
 
 // ON CLICK OF DRAW
-$('#draw').click(function(event) {
-  console.log('draw');
-  console.log(user);
-  console.log(user.name);
-  socket.emit('draw', user.name)
+$('#draw').click(function() {
+  socket.emit('draw')
 })
 //STOP DRAW
 socket.on('stop draw', function() {
@@ -163,6 +167,7 @@ socket.on('stop draw', function() {
 //Receive cards
 socket.on('oneCard', function(card) {
   console.log('card received is', card);
+  $('#playerDraw').removeClass('hidden')
   $('#hand').append($('<li class="two wide column">').text(card.face))
   $('#hand').append($('<li>').text(card.suit))
 })
@@ -186,6 +191,25 @@ socket.on('player', function(passedHand) {
 
     }
   }
+})
 
+//NEW ROUND
+$('#newRound').click(function() {
+  socket.emit('new')
+})
 
+//Clear previous cards and hands
+socket.on('clear', function() {
+  $('#hand').empty()
+  $('#playerObject').empty()
+  $('#deal').removeClass('disabled')
+  $('#playerDraw').addClass('hidden')
+  $('#draw').removeClass('disabled')
+})
+
+//BETTING element
+$('#bet').dropdown(); //enable dropdown
+
+$('#betAmt').change(function() {
+  $('#currentBet').html($('#betAmt').text())
 })
