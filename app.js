@@ -47,7 +47,7 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/game-table', routes)
 
-const playersInGame = []
+let playersInGame = []
 
 function findPlayer (id) {
   var newArr = playersInGame.filter(function (c) { return c.socketID === id })[0]
@@ -55,41 +55,59 @@ function findPlayer (id) {
   return newArr
 }
 
+function findBanker() {
+    var bankerTrue = playersInGame.filter(function (c) { return c.type === 'banker' })[0]
+    console.log('is there a banker?', bankerTrue);
+    return bankerTrue
+}
+
 io.on('connection', function(socket){
+  if (findBanker()) {
+    console.log('theres a banker and you can play');
+    socket.emit('tableTrue', `${playersInGame.length} online and theres a table` )
+  } else {
+    socket.emit('tableFalse', `Be the banker and create a table` )
+  }
+  // listen for a BANKER to CREATING table
+  socket.on('create', (user) => { //received entire banker object
+    user.socketID = socket.id
+    user.inGame = true
+    console.log('<<<<<<This is user:', user);
+    console.log(typeof(user));
+    playersInGame.push(user)
+    let player = user
+    console.log("this is banker>>>>>", player);
+    console.log("pig array>>>>>", playersInGame);
+    // emit welcome message to new user
+    socket.emit('readyToPlay', `Hi ${player.name}, welcome to pHuatty Baccarrat!`)
+    // broadcast their arrival to everyone else
+    socket.broadcast.emit('created', user)
+    // socket.emit('whosOnline', `${playersInGame.length} online` )
+    io.sockets.emit('online', playersInGame)
+  })
 
-  socket.on('Shuffled Deck', function(){ //Deck received and on server
-    assign(shuffle(deck));
-    console.log("### Number of player in game: " + playersInGame.length + "players are: " );
-    //Deal Cards back to clients
-    for (var j = 0; j < 2; j++) {
-      for (var i = 0; i < playersInGame.length; i++) {
-        deal(playersInGame[i])
-        console.log('dealing to ', playersInGame[i].name);
-        console.log(playersInGame[i].cards);
-        // io.emit('dealt cards face', playersInGame[i]);
-      }
-      //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
-    }
-  });
+  //listen for banker DESTROYING table
+  socket.on('destroy', () => { //received entire user object
 
-  //listen for draw
-  socket.on('draw', function (user) { //pass user.name
-    console.log('im drawing');
-    console.log("drawing user's particular: ", user);
-    console.log(playersInGame);
     let player = findPlayer(socket.id)
-    var arrayIndex = playersInGame.indexOf(player);
-    deal(playersInGame[arrayIndex])
-    console.log('drawn');
-    console.log(playersInGame[arrayIndex].cards);
+    if (player) {
+      console.log("now banker>>", player);
+      player.inGame = false
+      playersInGame = []
+      console.log('destroyed');
+      console.log("is there still players in game???>>>", playersInGame);
+      io.sockets.emit('destroyed', `Banker destroyed the table, hope to see you all again!`)
+    }
   })
 
   // listen for a user to join table
-  socket.on('join', (user) => {
+  socket.on('join', (user) => { //received entire user object
 
     user.socketID = socket.id
     user.inGame = true
-    playersInGame.push(user)
+    console.log('<<<<<<This is user:', user);
+    console.log(typeof(user));
+    playersInGame.unshift(user)
     let player = user
     // console.log("this is player>>>>>", player);
     console.log("pig array>>>>>", playersInGame);
@@ -97,9 +115,32 @@ io.on('connection', function(socket){
     socket.emit('welcome', `Hi ${player.name}, welcome to pHuatty Baccarrat!`)
     // broadcast their arrival to everyone else
     socket.broadcast.emit('joined', user)
+    socket.emit('whosOnline', `${playersInGame.length} online and banker` )
     // io.sockets.emit('online', connections)
 
     console.log(`## ${player.name} joined the chat on (${socket.id}).`)
+  })
+
+  //listen for a user quiting table
+  socket.on('quit', () => { //received entire user object
+
+    let player = findPlayer(socket.id)
+    if (player) {
+      console.log("now player>>", player);
+      player.inGame = false
+      playersInGame.splice(playersInGame.indexOf(player),1)
+      console.log('removed');
+      console.log("playersingame>>>", playersInGame);
+      socket.emit('quit', `Bye ${player.name}, Hope to see you again!`)
+
+      if (player.name) {
+        socket.broadcast.emit('left', player.name)
+        socket.broadcast.emit('online', playersInGame)
+        console.log(`## ${player.name}(${player.socketID}) disconnected. Remaining: ${playersInGame.length}.`)
+      } else {
+        console.log(`## Connection (${player.socketID}) (${socket.id}) disconnected. Remaining: ${playersInGame.length}.`)
+      }
+    }
   })
 
   // listen for a disconnect event
@@ -108,6 +149,13 @@ io.on('connection', function(socket){
     console.log('diconnecting');
     let player = findPlayer(socket.id)
     if (player) {
+      if (player.type === 'banker') {
+        player.inGame = false
+        playersInGame = []
+        console.log('destroyed');
+        console.log("is there still players in game???>>>", playersInGame);
+        io.sockets.emit('destroyed', `Banker destroyed the table, hope to see you all again!`)
+      }
       console.log("now player>>", player);
       player.inGame = false
       playersInGame.splice(playersInGame.indexOf(player),1)
@@ -123,6 +171,37 @@ io.on('connection', function(socket){
       }
     }
     socket.disconnect()
+  })
+
+  //----------------GAME PLAY--------------------//
+  socket.on('deal cards', function(){ //Deck received and on server
+    assign(shuffle(deck));
+    console.log("### We have " + playersInGame.length + " player(s) in game: ");
+    //Deal Cards back to players on server
+    for (var j = 0; j < 2; j++) {
+      for (var i = 0; i < playersInGame.length; i++) {
+        deal(playersInGame[i])
+        console.log('dealing to ', playersInGame[i].name);
+        console.log(playersInGame[i].cards);
+        socket.emit('stop deal');
+        socket.emit('oneCard', playersInGame[i].cards)
+      }
+      //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
+      socket.emit('player', playersInGame[i])
+    }
+  });
+
+  //listen for draw
+  socket.on('draw', function (user) { //pass user.name
+    console.log('im drawing');
+    console.log("drawing user's particular: ", user);
+    console.log(playersInGame);
+    let player = findPlayer(socket.id)
+    var arrayIndex = playersInGame.indexOf(player);
+    deal(playersInGame[arrayIndex])
+    console.log('drawn');
+    console.log(playersInGame[arrayIndex].cards);
+    socket.emit('stop draw')
   })
 });
 

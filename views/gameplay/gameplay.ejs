@@ -3,25 +3,44 @@
 </script>
 
 <div class="ui centered grid">
-  <div class="row" id="joinTable">
-    <% var inTable = false
-      if (!inTable) { %>
-        <button class="compact ui black button">Join Table</button>
-    <% } else { %>
-        <button class="compact ui black button">Quit Table</button>
-      <% } %>
+  <div class="row">
+    <div class="hidden" id="create">
+      <button class="compact ui black button" id="createTable">Create Table as banker</button>
+    </div>
+    <div class="hidden" id="destroy">
+      <button class="compact ui black button" id="destroyTable">Destroy Table</button>
+    </div>
+    <div class="hidden" id="join">
+      <button class="compact ui black button" id="joinTable">Join Table</button>
+    </div>
+    <div class="hidden" id="quit">
+      <button class="compact ui black button" id="quitTable">Quit Table</button>
+    </div>
   </div>
 </div>
 
 <div class="ui centered grid">
-  <button class="compact ui green button" id="deal">Deal Cards</button>
+  <div class="hidden" id="bankerDeal">
+    <button class="compact ui green button" id="deal">Deal Cards</button>
+  </div>
 </div>
 
 <div class="ui two column centered grid">
   <div class="row">
     <div class="column journal">
-      hi
       <ul id="messages"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="ui twelve column centered grid">
+  <div class="row">
+    <div class="column hand">
+      <ul id="hand">my empty hand
+      </ul>
+    </div>
+    <div class="right floated three column">
+      <div id="playerObject"></div>
     </div>
   </div>
 </div>

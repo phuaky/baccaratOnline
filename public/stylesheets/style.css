@@ -29,3 +29,10 @@ body {
 .journal {
   border: 5px solid red;
 }
+.hand {
+  border: 5px solid yellow;
+}
+
+.hidden {
+  display: none;
+}
