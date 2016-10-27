@@ -57,19 +57,8 @@ function findPlayer (id) {
 
 io.on('connection', function(socket){
 
-  socket.on('Shuffled Deck', function(deck){ //Deck received and on server
-    console.log(deck);
-    // -----DEAL CARDS-----分牌！！！
-    function deal (ghost) {
-      var takeTopCard = deck.shift(); //taking out first card
-      ghost.cards.push(takeTopCard); //storing into player's card array
-      ghost.valueOfHand = valueOfHand(ghost) //storing value of hand into player's value
-      ghost.sameCard = sameCard(ghost)
-      ghost.suited = suited(ghost)
-      ghost.allPictures = allPictures(ghost)
-      ghost.handType = handTypeOfHand(ghost)
-      ghost.payout = payout(ghost)
-    }
+  socket.on('Shuffled Deck', function(){ //Deck received and on server
+    assign(shuffle(deck));
     console.log("### Number of player in game: " + playersInGame.length + "players are: " );
     //Deal Cards back to clients
     for (var j = 0; j < 2; j++) {
@@ -79,9 +68,21 @@ io.on('connection', function(socket){
         console.log(playersInGame[i].cards);
         // io.emit('dealt cards face', playersInGame[i]);
       }
+      //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
     }
-    // io.emit('show cards', deck);
   });
+
+  //listen for draw
+  socket.on('draw', function (user) { //pass user.name
+    console.log('im drawing');
+    console.log("drawing user's particular: ", user);
+    console.log(playersInGame);
+    let player = findPlayer(socket.id)
+    var arrayIndex = playersInGame.indexOf(player);
+    deal(playersInGame[arrayIndex])
+    console.log('drawn');
+    console.log(playersInGame[arrayIndex].cards);
+  })
 
   // listen for a user to join table
   socket.on('join', (user) => {
@@ -126,6 +127,101 @@ io.on('connection', function(socket){
 });
 
 // GAMELOGIC
+
+// -----Start with blank array-----
+var deck = [];
+for (var i = 1; i < 53; i++) { // Loop and push into deck array
+  deck.push(i);
+}
+
+// -----Fisher Yates Card Shuffling-----
+function shuffle (array) {
+  var m = array.length, t, i;
+
+  // While there remain elements to shuffle…
+  while (m) {
+
+    // Pick a remaining element…
+    i = Math.floor(Math.random() * m--);
+
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  // console.log(array);
+  return array;
+}
+
+function card (value, suit, face, order) {
+  this.value = value;
+  this.suit = suit;
+  this.face = face;
+  this.order = order;
+}
+
+// -----Assign value & suit to shuffled deck-----
+function assign (array) {
+  // Clear Deck
+  clientDeck = []
+
+  for (var i = 0; i < array.length; i++) {
+
+    // ------GET VALUE OF CARDS ------
+    var vaalue = array[i] % 13;
+    if (vaalue % 13 >= 10) {
+      vaalue = 0;
+    }
+    // console.log(vaalue)
+
+    // ------GET order OF CARDS ------
+    var orrder = array[i] % 13;
+
+    // ------GET SUIT OF CARDS ------
+    var suuit = Math.floor((array[i] - 1) / 13);
+    if (suuit === 0) {
+      suuit = 'Diamonds';
+    } else if (suuit === 1) {
+      suuit = 'Clubs';
+    } else if (suuit === 2) {
+      suuit = 'Hearts';
+    } else if (suuit === 3) {
+      suuit = 'Spades';
+    }
+    // console.log(suuit)
+
+    // ------GET FACE OF CARDS ------
+    var faace = array[i] % 13;
+    if (faace === 11) {
+      faace = 'Jack';
+    } else if (faace === 12) {
+      faace = 'Queen';
+    } else if (faace === 0) {
+      faace = 'King';
+    } else if (faace === 1) {
+      faace = 'Ace';
+    }
+
+    var cardy = new card(vaalue, suuit, faace, orrder);
+    clientDeck.push(cardy);
+  }
+  // console.log(clientDeck);
+
+}
+
+var clientDeck = [];
+
+//DEAL CARDS
+function deal (ghost) {
+  var takeTopCard = clientDeck.shift(); //taking out first card
+  ghost.cards.push(takeTopCard); //storing into player's card array
+  ghost.valueOfHand = valueOfHand(ghost) //storing value of hand into player's value
+  ghost.sameCard = sameCard(ghost)
+  ghost.suited = suited(ghost)
+  ghost.allPictures = allPictures(ghost)
+  ghost.handType = handTypeOfHand(ghost)
+  ghost.payout = payout(ghost)
+}
 
 // Check Handtype Of Hand
 function handTypeOfHand (player) {

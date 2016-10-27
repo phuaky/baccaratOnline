@@ -1,6 +1,5 @@
 var socket = io();
 
-// var currentUser =
 // create an object for storing our user
 var user = {
   name: 'anon',
@@ -30,7 +29,7 @@ $('#log-in').click(function() {
 // -----GAME JAVASCRIPT-----
 
 // handle submission for joining the table
-$('#joinTable').click(function (event) {
+$('#joinTable').click(function () {
 
   // console.log(currentUserString)
   var currentUser = JSON.parse(currentUserString)
@@ -76,17 +75,9 @@ socket.on('left', function (user) {
 
 //ON CLICK OF DEAL
  $('#deal').click(function() {
-   // Create and Shuffle new deck
-   assign(shuffle(deck));
-   //Send deck to server
-   socket.emit('Shuffled Deck', clientDeck) //Send Shuffled Deck Array to server
-
-   // Deal Cards to all players on table
+   socket.emit('Shuffled Deck') //Send Shuffled Deck Array to server
  });
 
-socket.on('show cards', function(deck) {
-  $('#messages').append($('<li>').text(deck[0].face));
-})
 
 socket.on('dealt cards', function(playerObject) {
   console.log(playerObject);
@@ -94,7 +85,9 @@ socket.on('dealt cards', function(playerObject) {
 
 
 // ON CLICK OF DRAW
-$('#draw').click(function() {
-  deal(phua)
-  console.log(phua);
+$('#draw').click(function(event) {
+  console.log('draw');
+  console.log(user);
+  console.log(user.name);
+  socket.emit('draw', user.name)
 })
