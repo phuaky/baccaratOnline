@@ -172,7 +172,6 @@ io.on('connection', function(socket){
     }
     socket.disconnect()
   })
-
   //----------------GAME PLAY--------------------//
   socket.on('deal cards', function(){ //Deck received and on server
     assign(shuffle(deck));
@@ -184,13 +183,13 @@ io.on('connection', function(socket){
         console.log('dealing to ', playersInGame[i].name);
         console.log(playersInGame[i].cards);
         socket.emit('stop deal');
-        // socket.emit('oneCard', playersInGame[i].cards[j])
         io.sockets.connected[playersInGame[i].socketID].emit('oneCard', playersInGame[i].cards[j])
       }
     }
-    let player = findPlayer(socket.id)
     //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
-    socket.emit('player', player)
+    for (var k = 0; k < playersInGame.length; k++) {
+      io.sockets.connected[playersInGame[k].socketID].emit('player', playersInGame[k])
+    }
   });
 
   //listen for draw

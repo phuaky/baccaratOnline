@@ -169,7 +169,6 @@ socket.on('oneCard', function(card) {
 
 //Receive player object
 socket.on('player', function(passedHand) {
-  console.log('player hand received is', passedHand);
   var playerHand = passedHand
   console.log('playerHand: ', playerHand);
 
