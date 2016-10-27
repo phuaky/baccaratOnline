@@ -184,11 +184,13 @@ io.on('connection', function(socket){
         console.log('dealing to ', playersInGame[i].name);
         console.log(playersInGame[i].cards);
         socket.emit('stop deal');
-        socket.emit('oneCard', playersInGame[i].cards)
+        // socket.emit('oneCard', playersInGame[i].cards[j])
+        io.sockets.connected[playersInGame[i].socketID].emit('oneCard', playersInGame[i].cards[j])
       }
-      //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
-      socket.emit('player', playersInGame[i])
     }
+    let player = findPlayer(socket.id)
+    //PUSH ENTIRE PLAYER OBJECT BACK TO CLIENT.JS
+    socket.emit('player', player)
   });
 
   //listen for draw

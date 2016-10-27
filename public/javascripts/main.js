@@ -123,7 +123,7 @@ socket.on('left', function (user) {
 // keep track of who is ONLINE
   socket.on('online', function (playersInGame) {
     var names = ''
-    console.log('playersInGame: ', playersInGame)
+    // console.log('playersInGame: ', playersInGame)
     for (var i = 0; i < playersInGame.length; ++i) {
       if (playersInGame[i].name) {
         if (i > 0) {
@@ -163,12 +163,30 @@ socket.on('stop draw', function() {
 //Receive cards
 socket.on('oneCard', function(card) {
   console.log('card received is', card);
-  $('#hand').append($('<li>').text(card.face))
+  $('#hand').append($('<li class="two wide column">').text(card.face))
   $('#hand').append($('<li>').text(card.suit))
 })
 
 //Receive player object
-socket.on('player', function(playerHand) {
-  console.log('card received is', playerObject);
-  $('#playerObject').append($('<li>').text(playerObject))
+socket.on('player', function(passedHand) {
+  console.log('player hand received is', passedHand);
+  var playerHand = passedHand
+  console.log('playerHand: ', playerHand);
+
+  for (var prop in playerHand) {
+    console.log(prop + ": " + playerHand[prop]);
+    if (prop === "valueOfHand") {
+      $('#playerObject').append($('<li>').text("Total Value: " + playerHand[prop]))
+    }
+    if (prop === "handType") {
+      $('#playerObject').append($('<li>').text("Hand Type: " + playerHand[prop]))
+
+    }
+    if (prop === "payout") {
+      $('#playerObject').append($('<li>').text("Payout: " + playerHand[prop] + "x"))
+
+    }
+  }
+
+
 })
