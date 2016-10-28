@@ -168,12 +168,35 @@ socket.on('stop draw', function() {
 socket.on('oneCard', function(card) {
   console.log('card received is', card);
   $('#playerDraw').removeClass('hidden')
-  $('#hand').append($('<li class="two wide column">').text(card.face))
-  $('#hand').append($('<li>').text(card.suit))
+  $('#hand').append($("<img class ='column' id='card' src='images/Cards/" + card.face + " " + card.suit + ".png'/>"))
+
 })
 
 //Receive player object
 socket.on('player', function(passedHand) {
+  var playerHand = passedHand
+  console.log('playerHand: ', playerHand);
+
+  for (var prop in playerHand) {
+    console.log(prop + ": " + playerHand[prop]);
+    if (prop === "valueOfHand") {
+      $('#playerObject').append($('<li>').text("Total Value: " + playerHand[prop]))
+    }
+    if (prop === "handType") {
+      $('#playerObject').append($('<li>').text("Hand Type: " + playerHand[prop]))
+
+    }
+    if (prop === "payout") {
+      $('#playerObject').append($('<li>').text("Payout: " + playerHand[prop] + "x"))
+
+    }
+  }
+})
+
+//Receive player object
+socket.on('playerDraw', function(passedHand) {
+  $('#playerObject').empty()
+
   var playerHand = passedHand
   console.log('playerHand: ', playerHand);
 
@@ -211,5 +234,11 @@ socket.on('clear', function() {
 $('#bet').dropdown(); //enable dropdown
 
 $('#betAmt').change(function() {
-  $('#currentBet').html($('#betAmt').text())
+  var placedBet = $('#betAmt').text()
+  $('#currentBet').html(placedBet)
+  socket.emit('placeBetAmt', placedBet)
+})
+
+socket.on('whoHasBetted', function (msg) {
+  $('#messages').prepend($('<li>').html(msg))
 })

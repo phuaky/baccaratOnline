@@ -208,16 +208,24 @@ io.on('connection', function(socket){
     console.log(playersInGame[arrayIndex].cards[2]);
     socket.emit('stop draw')
     socket.emit('oneCard', player.cards[2])
+    socket.emit('playerDraw', player)
+
   })
 
-  //lister for new Round
+  //listen for new Round
   socket.on('new', function () {
     //Clear all the players card array on server and clear on client
     for (var l = 0; l < playersInGame.length; l++) {
       playersInGame[l].cards = []
       io.sockets.connected[playersInGame[l].socketID].emit('clear')
-
     }
+  })
+
+  //listen for placed bet
+  socket.on('placeBetAmt', function (placedBet) {
+    let player = findPlayer(socket.id)
+    player.currentBet = placedBet
+    io.sockets.emit('whoHasBetted', `${player.name} bets $${player.currentBet}`)
   })
 });//End OF SOCKET IO
 

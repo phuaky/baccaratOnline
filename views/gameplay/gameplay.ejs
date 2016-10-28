@@ -23,6 +23,8 @@
   <div class="hidden" id="bankerDeal">
     <button class="compact ui teal button" id="newRound">New Round</button>
     <button class="compact ui green button" id="deal">Deal Cards</button>
+    <button class="compact ui yellow button" id="pitCards">Pit Cards</button>
+
   </div>
 </div>
 
@@ -32,27 +34,30 @@
       <ul id="messages"></ul>
     </div>
   </div>
-</div>
-
-<div class="ui twelve column centered grid">
   <div class="row">
-    Current Bet: $
-    <div id="currentBet">
+    <div class="right aligned column">
+      Current Bet: $
+    </div>
+    <div class="left aligned column" id="currentBet">
       &nbsp---
     </div>
   </div>
+</div>
+
+<div class="ui three column aligned grid">
+  <div class="row" id="hand">
+  </div>
   <div class="row">
-    <ul id="hand">my empty hand
-    </ul>
-    <div class="right floated three wide column ">
-      <ul id="playerObject">Player Current Hand</ul>
+    <div class="three wide column centered ">
+      <h4>Player Current Hand</h4>
+      <ul id="playerObject"></ul>
     </div>
   </div>
 </div>
 
-<div class="ui centered grid">
+<div class="ui center aligned two column grid">
   <div class="row">
-    <div class="column">
+    <div class="right aligned column">
       <!-- <button class="fluid ui orange button" id="bet">Bet</button> -->
       <div class="ui center floating dropdown labeled search icon orange button" id="bet">
         <i class="dollar icon"></i>
@@ -68,9 +73,9 @@
         </div>
       </div>
     </div>
-    <div class="eight wide column">
+    <div class="left aligned column">
       <div class="hidden" id="playerDraw">
-        <button class="fluid ui violet button " id="draw">Draw</button>
+        <button class="ui violet button " id="draw">Draw</button>
       </div>
     </div>
   </div>
