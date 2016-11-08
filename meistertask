@@ -5,8 +5,6 @@ ban dealing card after first dealt
 
 allow draw card
 
-determine winner
-
 on join table, check credit from database
 
 pay money
